@@ -1,0 +1,89 @@
+﻿@model dynamic
+@{ Layout = null; }
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Upload/Crop Image - MVC</title>
+	<link href="/css/jquery.Jcrop.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script type="text/javascript" src="/scripts/jquery.Jcrop.min.js"></script>
+	<script type="text/javascript" src="/Scripts/jquery.form.js"></script> 
+	<script type="text/javascript">
+		$(document).ready(function() {
+			initCrop();
+		});
+		
+		function initCrop() {
+			$('#imgCrop').Jcrop({
+				onSelect: storeCoords
+			});
+		}
+ 
+		function storeCoords(c) {
+			$('#XCoordinate').val(c.x);
+			$('#YCoordinate').val(c.y);
+			$('#Width').val(c.w);
+			$('#Height').val(c.h);
+		};
+		
+		/*--- MVC-specific ---*/
+		$(function() {
+			var error = $('.error');
+			var img = $('img.image');
+			var uploadForm = $('.upload-form');
+			var uploadBtn = $('.upload-btn');
+			var cropForm = $('.crop-form');
+			var cropBtn = $('.crop-btn');
+			uploadForm.ajaxForm(function(response) {
+				console.log('upload submit');
+				console.log(response);
+				
+				error.html('');
+				if (response.filename) {
+					$('#imgCrop').attr('src', response.filename);
+					cropForm.find('#filename').val(response.filename);
+					uploadForm.hide();
+					cropForm.show();
+					initCrop();
+				} else {
+					error.html(response.errorMessage);
+				}
+			});
+			cropForm.ajaxForm(function(response) {
+				console.log('crop submit');
+				error.html('');
+				if (response.filename) {
+					img.attr('src', response.filename).show();
+					cropForm.hide();
+				} else {
+					error.html('An error occurred cropping the image.');
+				}
+			});
+		});
+	</script>
+</head>
+<body>
+	<div>
+		<h1>Upload/Crop Image - MVC</h1>
+		<img class="image" style="display:none;" />
+		
+		@using (Html.BeginForm("UploadImage", "Home", FormMethod.Post, new {enctype = "multipart/form-data", @class = "upload-form"}))
+		{
+			<input type="file" name="upload" />
+			<input type="submit" class="upload-btn" value="Upload"/>
+		}
+		@using (Html.BeginForm("CropImage", "Home", FormMethod.Post, new {enctype = "multipart/form-data", @class = "crop-form", style = "display:none;"}))
+		{
+			<input type="hidden" id="XCoordinate" name="XCoordinate" />
+			<input type="hidden" id="YCoordinate" name="YCoordinate" />
+			<input type="hidden" id="Width" name="width" />
+			<input type="hidden" id="Height" name="height" />
+			<input type="hidden" id="filename" name="filename" />
+			<img id="imgCrop" src="#" />
+			<input type="submit" class="crop-btn" value="Crop"/>
+		}
+		<span class="error"></span>
+	</div>
+</body>
+</html>
