@@ -1,7 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Linq;
 using System.Web;
 using System.Web.UI;
 using SaveResponseStatus=ImageCropDemo.UploadHelper.SaveResponseStatus;
